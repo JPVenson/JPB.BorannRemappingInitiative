@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using JPB.BorannRemapping.Client.Services
+@using Microsoft.AspNetCore.Authorization
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+@inject HttpService HttpService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+	<Authorized>
+		<a href="authentication/profile">o7, Cmdr @context.User.FindFirst("frontier:user:commanderName").Value!</a>
+		<button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
+	</Authorized>
+	<NotAuthorized>
+		<a href="authentication/register">Register</a>
+		<a href="authentication/login">Log in</a>
+	</NotAuthorized>
+</AuthorizeView>
+
+@code{
+	private async Task BeginSignOut(MouseEventArgs args)
+	{
+		await SignOutManager.SetSignOutState();
+		Navigation.NavigateTo("authentication/logout");
+	}
+}

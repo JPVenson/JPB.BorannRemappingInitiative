@@ -1,0 +1,12 @@
+﻿.text {
+	white-space: normal;
+	text-wrap: normal;
+}
+
+span.btn-alike {
+	@extend .text;
+}
+
+.btn-alike span {
+	@extend .text;
+}

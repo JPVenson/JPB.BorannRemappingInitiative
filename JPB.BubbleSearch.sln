@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JPB.BubbleSearch", "JPB.BubbleSearch\JPB.BubbleSearch.csproj", "{05439487-01D5-4836-8267-740C07E535BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JPB.BorannRemapping.Server", "JPB.BorannRemapping\Server\JPB.BorannRemapping.Server.csproj", "{D63F9A44-4EE4-41DB-9BDA-565D245BAAE7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JPB.BorannRemapping.Client", "JPB.BorannRemapping\Client\JPB.BorannRemapping.Client.csproj", "{CEC756B9-1525-42A5-A95C-EB2358E7971A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JPB.BorannRemapping.Shared", "JPB.BorannRemapping\Shared\JPB.BorannRemapping.Shared.csproj", "{C2F109D0-9C55-4A2D-8539-526752E917C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JPB.BorannRemapping.Controls", "JPB.BorannRemapping.Controls\JPB.BorannRemapping.Controls.csproj", "{6C004E46-7DE4-42E5-AEB5-0E599E39074A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05439487-01D5-4836-8267-740C07E535BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05439487-01D5-4836-8267-740C07E535BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05439487-01D5-4836-8267-740C07E535BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05439487-01D5-4836-8267-740C07E535BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D63F9A44-4EE4-41DB-9BDA-565D245BAAE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63F9A44-4EE4-41DB-9BDA-565D245BAAE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D63F9A44-4EE4-41DB-9BDA-565D245BAAE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D63F9A44-4EE4-41DB-9BDA-565D245BAAE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEC756B9-1525-42A5-A95C-EB2358E7971A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEC756B9-1525-42A5-A95C-EB2358E7971A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEC756B9-1525-42A5-A95C-EB2358E7971A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEC756B9-1525-42A5-A95C-EB2358E7971A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2F109D0-9C55-4A2D-8539-526752E917C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2F109D0-9C55-4A2D-8539-526752E917C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2F109D0-9C55-4A2D-8539-526752E917C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2F109D0-9C55-4A2D-8539-526752E917C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C004E46-7DE4-42E5-AEB5-0E599E39074A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C004E46-7DE4-42E5-AEB5-0E599E39074A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C004E46-7DE4-42E5-AEB5-0E599E39074A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C004E46-7DE4-42E5-AEB5-0E599E39074A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8187D8AE-15AA-450A-BCD8-9FE1EACCF379}
+	EndGlobalSection
+EndGlobal

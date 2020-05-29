@@ -1,0 +1,56 @@
+﻿
+.list-group-item-badge {
+	width: 5px;
+	/*height: 40px;*/
+	margin: -10px -15px;
+
+	@each $color, $value in $theme-colors {
+		@include list-group-item-variant($color, theme-color-level($color, -9), theme-color-level($color, 6));
+	}
+
+	&.no-fx-aware {
+		margin-left: 0;
+		margin-right: 0;
+	}
+}
+
+.badge {
+	@each $color, $value in $theme-colors {
+		&.badge-#{$color} {
+			color: $color;
+			background-color: theme-color-level($color, -9);
+		}
+	}
+}
+
+input, select, textarea.full-input {
+	max-width: none;
+}
+
+
+.btn-alike {
+	display: inline-block;
+	margin-bottom: 0;
+	font-weight: normal;
+	text-align: center;
+	vertical-align: middle;
+	background-image: none;
+	border: 1px solid transparent;
+	white-space: nowrap;
+	padding: 10px 15px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	border-radius: 4px;
+}
+
+/*Tables xed stripes*/
+
+@for $i from 3 through 12 {
+	.table-striped-#{$i} {
+		tbody tr:nth-of-type(#{$i}) {
+			background-color: $table-accent-bg;
+		}
+	}
+}
+
+

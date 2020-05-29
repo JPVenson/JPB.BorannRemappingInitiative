@@ -1,0 +1,70 @@
+@page "/systemStatus"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using JPB.BorannRemapping.Shared
+@using JPB.BorannRemapping.Shared.ViewModels
+@using JPB.BorannRemapping.Client.Services
+@inject HttpServiceAnonymous HttpService
+@attribute [AllowAnonymous]
+
+<h1>Status</h1>
+
+<p>Current System Mapping Status.</p>
+
+@if (SystemsStatus == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<form>
+		<div class="form-group row">
+			<label for="" class="col-4 col-form-label">Known Systems</label>
+			<div class="col-8">
+				<label>@SystemsStatus.SystemsKnown</label>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="text1" class="col-4 col-form-label">Mapping Submissions</label>
+			<div class="col-8">
+				<label>@SystemsStatus.Submissions</label>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="text2" class="col-4 col-form-label">Explored Systems</label>
+			<div class="col-8">
+				<label>@SystemsStatus.ExploredSystems</label>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="text3" class="col-4 col-form-label">Systems to Explore</label>
+			<div class="col-8">
+				<label>@SystemsStatus.SystemsToExplore</label>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="text3" class="col-4 col-form-label">Explored Bodies</label>
+			<div class="col-8">
+				<label>@SystemsStatus.ExploredBodies</label>
+			</div>
+		</div>
+	</form>
+}
+
+@code {
+	public EvaluatedSystemsInfoViewModel SystemsStatus { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			SystemsStatus = await HttpService
+			.GetValue<EvaluatedSystemsInfoViewModel>(Services.HttpService.BuildUrl("/api/SystemEvalApi/GetSystemsStatus"));
+		}
+		catch (AccessTokenNotAvailableException exception)
+		{
+			exception.Redirect();
+		}
+	}
+
+}

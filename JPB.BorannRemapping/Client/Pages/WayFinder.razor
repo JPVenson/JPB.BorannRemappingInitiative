@@ -1,0 +1,111 @@
+@page "/explore"
+@using Microsoft.AspNetCore.Authorization
+@using JPB.BorannRemapping.Shared.ViewModels
+@using JPB.BorannRemapping.Client.Services
+@using Radzen
+@using Radzen.Blazor;
+
+@attribute [Authorize]
+@inject HttpService HttpService
+
+<h1>
+	Wayfinder Tool
+</h1>
+
+<p>Select your current System and the app will tell you what system to explore next</p>
+<div class="row">
+	<div>
+		<div class="form-group row">
+			<label for="currentSystem" class="col-4 col-form-label">Current System</label>
+			<div class="col-8 input-group">
+				<div class="input-group-append">
+					<div class="input-group-text"
+					     @onclick="CurrentSystemSearchTextChanged"
+					     disabled="@(CurrentSystemSearchText == null || CurrentSystemSearchText.Length < 3)">
+						<span class="oi oi-magnifying-glass"></span>
+					</div>
+					@if (CurrentSystemLookupViewModel?.SystemViewModel != null)
+					{
+						<div class="input-group-text">
+							<a href="/explore-system/@CurrentSystemLookupViewModel.SystemViewModel.SystemId">@CurrentSystemLookupViewModel.SystemViewModel.Name</a>
+						</div>
+					}
+				</div>
+				<input type="text"
+				       class="form-control"
+				       @bind="CurrentSystemSearchText" />
+			</div>
+			<span id="currentSystemHelpBlock" class="form-text text-muted">
+				What system are you in? (Only systems within 200ly from Sol are available)
+			</span>
+		</div>
+		@if (SystemLookup != null)
+		{
+			<table class="table">
+				<thead>
+				<tr>
+					<th>Name</th>
+				</tr>
+				</thead>
+				<tbody>
+				@foreach (var system in SystemLookup)
+				{
+					<tr @onclick="() => SelectedCurrentSystem = system"
+					     class="selectable selectable-primary">
+						@*<td>
+							<a class="nav-link" href="explore-system?id=@system.Id64">
+								<span class="oi oi-link-intact" aria-hidden="true"></span>
+							</a>
+						</td>*@
+						<td>@system.Name</td>
+					</tr>
+				}
+				</tbody>
+			</table>
+		}
+		@if (SelectedCurrentSystem != null)
+		{
+			<div class="form-group row">
+				<div class="offset-4 col-8">
+					<a href="/explore-system/@SelectedCurrentSystem.SystemId">
+						I am in '@SelectedCurrentSystem.Name'
+					</a>
+				</div>
+			</div>
+		}
+	</div>
+</div>
+
+@code
+{
+
+	protected override async Task OnInitializedAsync()
+	{
+		var apiResult = await HttpService.Get<CurrentSystemLookupViewModel>("/api/CommanderApi/GetPosition");
+		if (apiResult.Success)
+		{
+			CurrentSystemLookupViewModel = apiResult.Object;
+		}
+	}
+
+	public CurrentSystemLookupViewModel CurrentSystemLookupViewModel { get; set; }
+	public string CurrentSystemSearchText { get; set; }
+	public SystemLookupViewModel SelectedCurrentSystem { get; set; }
+	public SystemLookupViewModel[] SystemLookup { get; set; }
+
+	public async Task CurrentSystemSearchTextChanged()
+	{
+		SelectedCurrentSystem = null;
+		if (CurrentSystemSearchText == null || CurrentSystemSearchText.Length < 3)
+		{
+			return;
+		}
+
+		var systems = await HttpService
+			.GetValue<SystemLookupViewModel[]>(HttpService.BuildUrl("/api/SystemApi/SearchSystems", new
+			{
+				systemName = CurrentSystemSearchText
+			}));
+		SystemLookup = systems;
+	}
+}

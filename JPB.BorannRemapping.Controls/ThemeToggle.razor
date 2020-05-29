@@ -1,0 +1,19 @@
+﻿<h3>ThemeToggle</h3>
+
+<input type="checkbox" 
+       data-toggle="toggle"
+       data-on="Lights on"
+       data-off="Lights off"
+       @value="ThemeState"
+       @onchange="ThemeChanged">
+
+@code {
+
+	public bool ThemeState { get; set; }
+
+
+	private void ThemeChanged()
+	{
+		
+	}
+}

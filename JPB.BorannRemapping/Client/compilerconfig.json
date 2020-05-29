@@ -1,0 +1,14 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/site-init.css",
+    "inputFile": "wwwroot/css/site-init.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/theme/theme-day/site-theme.css",
+    "inputFile": "wwwroot/css/theme/theme-day/site-theme.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/theme/theme-night/site-theme.css",
+    "inputFile": "wwwroot/css/theme/theme-night/site-theme.scss"
+  }
+]

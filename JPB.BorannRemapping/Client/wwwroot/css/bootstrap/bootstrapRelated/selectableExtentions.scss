@@ -1,0 +1,17 @@
+﻿.selectable{
+	pointer-events: auto;
+	cursor: pointer;
+}
+
+@mixin selectable($type) {
+	&.selectable-#{$type}:hover:not([disabled]) {
+		@extend .selectable;
+		background-color: $primary;
+	}
+}
+
+@include selectable(primary);
+
+.list-group-item[ng-click]:not([disabled]) {
+	@include selectable(primary);
+}

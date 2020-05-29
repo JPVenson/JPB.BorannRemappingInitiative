@@ -1,0 +1,98 @@
+﻿@page "/"
+@using System.Collections
+@using JPB.BorannRemapping.Client.Services
+@using JPB.BorannRemapping.Shared.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@inject HttpServiceAnonymous HttpService
+@attribute [AllowAnonymous]
+
+<h1>Welcome to the Borann Remapping Initiative</h1>
+
+<div class="alert alert-warning">
+	<span>
+		Attention. All data entered prior the Final fleetcarrier update will be purged when the Update is live!
+	</span>
+</div>
+<p>
+	This webpage is designed to help the Elite community to remap
+	Icy rings to search for a new triple LTD hotspot as it was present in Borann
+</p>
+
+<h3>
+	How does it work?
+</h3>
+<p>
+	I created a list with all known Systems within 200ly from Sol that contain a Icy ring around a celestial body.
+</p>
+<p>
+	You can enter your location and the system will tell you the nearest such system for you to explore.
+</p>
+<p>
+	When you explored a system, the Borann Remapping Initiative will ask you to fill a form with your findings that will be queued for other commanders to verify.
+</p>
+<p>
+	To Ensure that all submission are at least somewhat legit, the Borann Remapping Initiative Server will check with the Frontier api in the background to verify that you are actually in the system you claim to explore.
+	<br/>
+</p>
+<p>
+	<b>Even if you do not find a system with a double or triple LTD hotspot, fill out the data as such data is currently not automatic obtainable from the game.</b>
+</p>
+
+<h3>
+	Log
+</h3>
+@if (SystemEvalPublicViewModel == null)
+{
+	<p>Loading...</p>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					When
+				</th>
+				<th>
+					Who
+				</th>
+				<th>
+					What
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var data in SystemEvalPublicViewModel.LatestEvalas)
+			{
+				<tr>
+					<td>@data.DateOfCreation.ToString("g")</td>
+					<td>@data.UserName</td>
+					<td>@data.SystemName</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+
+@code
+{
+	public SystemEvalPublicViewModel SystemEvalPublicViewModel { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		Console.WriteLine("Loading");
+		try
+		{
+			SystemEvalPublicViewModel = await HttpService
+				.GetValue<SystemEvalPublicViewModel>(
+					Services.HttpService.BuildUrl("api/SystemEvalApi/LatestEvals"));
+			Console.WriteLine("Loading done");
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+		}
+
+	}
+}

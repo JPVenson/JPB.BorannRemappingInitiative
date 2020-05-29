@@ -1,0 +1,103 @@
+@page "/reviewQueue"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using JPB.BorannRemapping.Shared
+@using JPB.BorannRemapping.Client.Services
+@using JPB.BorannRemapping.Shared.ViewModels
+@using System.Net
+@attribute [Authorize(Roles = "Reviewer")]
+@inject HttpService HttpService
+
+<h1>Review Queue</h1>
+
+@if (Loading)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	if (NextReview == null)
+	{
+		<p><em>No new Reviews</em></p>
+	}
+	else
+	{
+		<div class="card">
+			<div class="card-header">
+				@NextReview.CommanderName - @NextReview.IdSystemBodyNavigation.Name
+			</div>
+			
+			<div class="card-body">
+				<div class="form">
+					<div class="form-group row">
+						<label for="textarea" class="col-4 col-form-label">Review Comment</label>
+						<div class="col-8">
+							<textarea id="textarea" name="textarea" cols="40" rows="5" class="form-control"
+								  @bind="NextReview.Comment"></textarea>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label for="text" class="col-4 col-form-label">Proving Image</label>
+						<div class="col-8">
+							<span>@NextReview.ProveImage</span>
+							<img class="img img-fluid"
+							     src="@(NextReview.ProveImage + ".jpg")"/>
+						</div>
+					</div>
+					<div class="form-group row">
+						<div class="offset-4 col-8">
+							<button class="btn btn-success"
+							        @onclick="() => MarkAs(true)">
+								Confirmed
+							</button>
+							<button class="btn btn-warning float-right"
+							        @onclick="() => MarkAs(false)">
+								Garbage
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+@code {
+	public SystemEvalReviewViewModel NextReview { get; set; }
+	public bool Loading { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		Loading = true;
+		try
+		{
+			NextReview = await HttpService.GetValue<SystemEvalReviewViewModel>("/api/SystemEvalApi/ReviewQueue");
+			Loading = false;
+		}
+		catch (AccessTokenNotAvailableException exception)
+		{
+			exception.Redirect();
+		}
+	}
+
+	public async Task MarkAs(bool confirmed)
+	{
+		Loading = true;
+		try
+		{
+			await HttpService.Post(Services.HttpService.BuildUrl("/api/SystemEvalApi/SubmitReview", new
+			{
+				submissionId = NextReview.SubmissionId,
+				state = confirmed,
+				comment = NextReview.Comment
+			}));
+
+			NextReview = await HttpService.GetValue<SystemEvalReviewViewModel>("/api/SystemEvalApi/ReviewQueue");
+			Loading = false;
+		}
+		catch (AccessTokenNotAvailableException exception)
+		{
+			exception.Redirect();
+		}
+	}
+}

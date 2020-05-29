@@ -1,0 +1,303 @@
+@page "/explore-system/{CurrentSystemId}"
+@using Microsoft.AspNetCore.Authorization
+@using JPB.BorannRemapping.Shared.ViewModels
+@using JPB.BorannRemapping.Client.Services
+@using System.Net
+@using System.Threading
+@using JPB.BorannRemapping.Client.Services.Helper
+
+@attribute [Authorize]
+@inject HttpService HttpService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h1>
+	Explores Tool
+</h1>
+
+@if (CurrentSystem == null)
+{
+	<p>Loading ...</p>
+}
+else if (InterestingHotspotSubmissionEntity != null)
+{
+	<div class="card center-block">
+		<div class="card-header">
+			<h2>
+				"I, Cmdr @CommanderName found something of interest
+				in the @NextSystem.TargetSystem.Name system for the Elite Community"
+			</h2>
+		</div>
+		<div class="card-body">
+
+			<div class="form">
+				<div class="form-group row">
+					<label for="textarea" class="col-4 col-form-label">I found:</label>
+					<div class="col-8">
+						<textarea id="textarea" name="textarea" cols="40" rows="5" class="form-control"
+								  @bind="InterestingHotspotSubmissionEntity.Comment"></textarea>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="text" class="col-4 col-form-label">and i can prove it with this image from <a href="https://imgur.com/">Imgur</a></label>
+					<div class="col-8">
+						<input id="text" name="text" type="text" class="form-control"
+							   @bind="InterestingHotspotSubmissionEntity.ProvingUrl">
+					</div>
+				</div>
+				<div class="row">
+					<div class="alert alert-dismissible">
+						<span>@ErrorText</span>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="offset-4 col-8">
+						<button class="btn btn-success"
+								disabled="@(InterestingHotspotSubmissionEntity.Validate())"
+								@onclick="() => MarkAs(InterestingHotspotSubmissionEntity.BodyId, InterestingHotspotSubmissionEntity.Comment, true, InterestingHotspotSubmissionEntity.ProvingUrl)">
+							Interesting
+						</button>
+						<button class="btn btn-warning float-right"
+								@onclick="() => InterestingHotspotSubmissionEntity = null">
+							Cancel
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+else
+{
+	<h5>
+		What does <span class="btn btn-success">Interesting</span> mean?
+		<small>
+			Please only press this button if you found a double or triple LTD hotspot here.
+		</small>
+	</h5>
+	<p>
+		You are currently in '@CurrentSystem.Name'.
+	</p>
+
+	<p>
+		It would be nice if you could explore <h2>@NextSystem.TargetSystem.Name</h2> for us.
+		@NextSystem.TargetSystem.Name is @(Math.Round(NextSystem.DistanceFromReferencePoint, 2)) LY from @CurrentSystem.Name
+	</p>
+	<p>
+		@NextSystem.TargetSystem.Name has @NextSystem.NoBodies Bodies.
+		but only @FilterBodies().Count() are maybe interesting
+	</p>
+	if (NextPossibleSubmission.HasValue)
+	{
+		<span>
+			Next Submission in: @NextPossibleSubmission.Value.Minutes minutes
+			and @NextPossibleSubmission.Value.Seconds seconds
+		</span>
+	}
+	<div class="row">
+		<div class="alert alert-dismissible">
+			<span>@ErrorText</span>
+		</div>
+	</div>
+	<div class="row">
+		@foreach (var systemToExplore in FilterBodies())
+		{
+			<div class="card col-3 m-2">
+				<div class="card-header">
+					<p>
+						The body named '@systemToExplore.Name' is @(LightDistanceHumanizer.Humanize(systemToExplore.DistanceToArrival)) from its main star
+					</p>
+				</div>
+				<div class="card-body">
+					<p>
+						It has @systemToExplore.SystemBodyRing.Length ring/s, @systemToExplore.SystemBodyRing.Count(f => f.Type == "Icy") are Icy
+					</p>
+				</div>
+				<div class="card-footer">
+					<button class="btn btn-danger"
+							disabled="@(NextSubmission != null && NextSubmission > DateTimeOffset.UtcNow)"
+							@onclick="() => MarkAs(systemToExplore.SystemBodyId, null, false)">
+						Nothing
+					</button>
+					<button class="btn btn-success float-right"
+							disabled="@(NextSubmission != null && NextSubmission > DateTimeOffset.UtcNow)"
+							@onclick="() => CreateSubmissionWindow(systemToExplore)">
+						Interesting
+					</button>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+
+@code
+{
+	public class InterestingHotspotSubmission
+	{
+		public string ProvingUrl { get; set; }
+		public long SystemId { get; set; }
+		public long BodyId { get; set; }
+		public string Comment { get; set; }
+
+		public bool Validate()
+		{
+			return Comment == null ||
+				   Comment.Length < 10 ||
+				   ProvingUrl == null ||
+				   !ProvingUrl.StartsWith("https://imgur.com/");
+		}
+	}
+
+	public InterestingHotspotSubmission InterestingHotspotSubmissionEntity { get; set; }
+
+	[Parameter]
+	public string CurrentSystemId { get; set; }
+
+	[CascadingParameter]
+	private AuthenticationState Context { get; set; }
+
+	public SystemLookupViewModel CurrentSystem { get; set; }
+	public NextSystemEval NextSystem { get; set; }
+
+	public TimeSpan? NextPossibleSubmission { get; set; }
+	public DateTimeOffset? NextSubmission { get; set; }
+	public string ErrorText { get; set; }
+
+	private System.Timers.Timer _timer;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		var authenticationStateAsync = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		CommanderName = authenticationStateAsync.User.FindFirst("frontier:user:commanderName").Value;
+
+		var sysId = long.Parse(CurrentSystemId);
+		NextSystem =
+		await HttpService.GetValue<NextSystemEval>(HttpService.BuildUrl("api/SystemApi/NextPossibleSystem", new
+		{
+			systemId = sysId
+		}));
+
+		CurrentSystem =
+		await HttpService.GetValue<SystemLookupViewModel>(HttpService.BuildUrl("api/SystemApi/Search", new
+		{
+			systemId = sysId
+		}));
+
+		NextSubmission = await LocalStorage.GetItemAsync<DateTimeOffset?>("BRI.NextSubmissionAllowed");
+		if (NextSubmission != null)
+		{
+			await StartTimer();
+		}
+	}
+
+	public IEnumerable<SystemBodyViewModel> FilterBodies()
+	{
+		return NextSystem.TargetSystem.SystemBody.Where(f => f.SystemBodyRing?.Any(e => e.Type == "Icy") == true);
+	}
+
+	public async Task MarkAs(long systemBodyId, string comment, bool poi, string provingUrl = null)
+	{
+		ErrorText = null;
+		if (NextSubmission != null && NextSubmission > DateTimeOffset.UtcNow)
+		{
+			return;
+		}
+
+		if (systemBodyId == 0)
+		{
+			return;
+		}
+
+		if (poi && provingUrl == null)
+		{
+			return;
+		}
+
+		var apiResult = await HttpService.Post(HttpService.BuildUrl("api/SystemEvalApi/MarkSystemBodyAs", new
+		{
+			systemBodyId,
+			comment,
+			isPointOfInterest = poi,
+			provingUrl
+		}));
+		if (apiResult.StatusCode == HttpStatusCode.BadRequest)
+		{
+			ErrorText = "It seems you are not yet in this system. If you just entered this system, please wait 2 minutes and try again.";
+
+			var currentCmrSystem = await HttpService.GetValue<CurrentSystemLookupViewModel>("/api/CommanderApi/GetPosition");
+			Console.WriteLine("Found System " + currentCmrSystem.SystemViewModel.Name);
+			CurrentSystem = currentCmrSystem.SystemViewModel ?? new SystemLookupViewModel()
+			{
+				Name = currentCmrSystem.CurrentSystem
+			};
+			if (currentCmrSystem.SystemViewModel != null)
+			{
+				NextSystem.DistanceFromReferencePoint
+					= Math.Sqrt(
+						Math.Pow(currentCmrSystem.SystemViewModel.X - NextSystem.TargetSystem.X, 2) +
+						Math.Pow(currentCmrSystem.SystemViewModel.Y - NextSystem.TargetSystem.Y, 2) +
+						Math.Pow(currentCmrSystem.SystemViewModel.Z - NextSystem.TargetSystem.Z, 2));
+			}
+		}
+
+		NextSubmission = DateTimeOffset.Now.AddMinutes(2).AddSeconds(2);
+		await StartTimer();
+		if (apiResult.StatusCode == HttpStatusCode.TooManyRequests)
+		{
+			ErrorText = "To many requests. Please wait for the timer";
+			return;
+		}
+		CurrentSystem = NextSystem.TargetSystem;
+		NextSystem.TargetSystem.SystemBody.Remove(
+			NextSystem.TargetSystem.SystemBody.First(e => e.SystemBodyId == systemBodyId));
+
+		if (poi)
+		{
+			InterestingHotspotSubmissionEntity = null;
+		}
+
+		await EvaluateToNextSystem();
+	}
+
+	private async Task StartTimer()
+	{
+		await LocalStorage.SetItemAsync("BRI.NextSubmissionAllowed", NextSubmission);
+		Timer timer = null;
+		timer = new Timer(new TimerCallback(_ =>
+		{
+			NextPossibleSubmission = NextSubmission - DateTimeOffset.UtcNow;
+			if (NextSubmission != null && NextSubmission < DateTimeOffset.UtcNow)
+			{
+				NextPossibleSubmission = null;
+				NextSubmission = null;
+				timer.Dispose();
+			}
+
+			this.StateHasChanged();
+		}), null, 1000, 1000);
+	}
+
+	private async Task EvaluateToNextSystem()
+	{
+		if (!FilterBodies().Any())
+		{
+			NextSystem =
+				await HttpService.GetValue<NextSystemEval>(HttpService.BuildUrl("api/SystemApi/NextPossibleSystem", new
+				{
+					systemId = CurrentSystem.SystemId
+				}));
+		}
+	}
+
+	private void CreateSubmissionWindow(SystemBodyViewModel systemToExplore)
+	{
+		InterestingHotspotSubmissionEntity = new InterestingHotspotSubmission
+		{
+			SystemId = NextSystem.TargetSystem.SystemId,
+			BodyId = systemToExplore.SystemBodyId
+		};
+	}
+
+	public string CommanderName { get; set; }
+}

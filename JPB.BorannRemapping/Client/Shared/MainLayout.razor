@@ -1,0 +1,32 @@
+﻿@using JPB.BorannRemapping.Client.Services
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject HttpService HttpService
+<div class="sidebar">
+	<NavMenu />
+</div>
+
+<div class="main">
+	<div class="top-row px-4 auth">
+		<LoginDisplay />
+	</div>
+
+	<div class="content px-4">
+		@Body
+	</div>
+</div>
+
+@code
+{
+	[CascadingParameter]
+	private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		var authenticationStateTask = await AuthenticationStateTask;
+		if (authenticationStateTask.User.Identity.IsAuthenticated)
+		{
+			await HttpService.RefreshMe();
+		}
+	}
+}

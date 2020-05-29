@@ -1,0 +1,29 @@
+﻿
+.navbar-placeholder-expander > span  {
+    background-color: #fff;
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 1px;
+    z-index: 9500;
+    margin-bottom: 5px;
+}
+
+#navbarMin {
+	position: fixed;
+	width: 100%;
+	z-index: 8000;
+}
+
+.navbar-placeholder {
+	@extend .bg-dark;
+	height: 5px;
+}
+
+.navbar-placeholder-expander {
+	@extend .bg-dark;
+	height: 25px;
+	width: 50px;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+}

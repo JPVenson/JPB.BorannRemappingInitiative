@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "Server=.\V17;Database=JPB.BorannRemapping.Database;Trusted_Connection=True;MultipleActiveResultSets=true" -context "AppDbContext" -provider Microsoft.EntityFrameworkCore.SqlServer -OutputDir "Data\AppContext" -force -DataAnnotation
